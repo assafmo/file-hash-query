@@ -1,15 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"regexp"
 	"strings"
-
-	"golang.org/x/net/html"
 
 	"gopkg.in/xmlpath.v2"
 )
@@ -30,7 +27,8 @@ func main() {
 }
 
 func virustotal(sha256 string) (string, error) {
-	request, err := http.NewRequest("GET", fmt.Sprintf("https://www.virustotal.com/en/file/%s/analysis/", sha256), nil)
+	url := fmt.Sprintf("https://www.virustotal.com/en/file/%s/analysis/", sha256)
+	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err
 	}
@@ -48,19 +46,8 @@ func virustotal(sha256 string) (string, error) {
 		return "", err
 	}
 
-	//fix html
-	rootHTML, err := html.Parse(response.Body)
+	xmlRoot, err := xmlpath.ParseHTML(response.Body)
 	defer response.Body.Close()
-	if err != nil {
-		return "", err
-	}
-
-	var b bytes.Buffer
-	html.Render(&b, rootHTML)
-	fixedHTML := b.String()
-
-	reader := strings.NewReader(fixedHTML)
-	xmlRoot, err := xmlpath.ParseHTML(reader)
 	if err != nil {
 		return "", err
 	}
