@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+
 	"strings"
 
 	"gopkg.in/xmlpath.v2"
@@ -53,8 +54,15 @@ func virustotal(sha256 string) (string, error) {
 	}
 
 	scoreXPath := xmlpath.MustCompile(`//*[@id="basic-info"]/div/div[1]/table/tbody/tr[3]/td[2]`)
-	if value, ok := scoreXPath.String(xmlRoot); ok {
-		return strings.Trim(value, " \n"), nil
+	dateXPath := xmlpath.MustCompile(`//*[@id="basic-info"]/div/div[1]/table/tbody/tr[4]/td[2]`)
+	score, okScore := scoreXPath.String(xmlRoot)
+	date, okDate := dateXPath.String(xmlRoot)
+
+	if okDate && okScore {
+		score = strings.Replace(strings.Trim(score, " \n"), " ", "", -1)
+		date = strings.Trim(date, " \n")[:19]
+
+		return fmt.Sprintf("score: %s, date: %s", score, date), nil
 	}
 
 	return "", fmt.Errorf("Result not found in HTML")
