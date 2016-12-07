@@ -22,9 +22,13 @@ func main() {
 		log.Fatalln("cannot match sha256 with regex ^[a-fA-F0-9]{64}$")
 	}
 
-	vt, _ := virustotal(*sha256)
+	vt, err := virustotal(*sha256)
 
-	fmt.Println("Result:", vt)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Println(vt)
 }
 
 func virustotal(sha256 string) (string, error) {
@@ -65,5 +69,5 @@ func virustotal(sha256 string) (string, error) {
 		return fmt.Sprintf("score: %s, date: %s", score, date), nil
 	}
 
-	return "", fmt.Errorf("Result not found in HTML")
+	return "", fmt.Errorf("Not found on VirusTotal")
 }
