@@ -22,7 +22,7 @@ func main() {
 	sha256Regex := regexp.MustCompile("^[a-fA-F0-9]{64}$")
 
 	if !sha256Regex.MatchString(*sha256) {
-		log.Fatalln("cannot match sha256 with regex ^[a-fA-F0-9]{64}$")
+		log.Fatalln("Cannot match sha256 with regex ^[a-fA-F0-9]{64}$")
 	}
 
 	result, _ := virustotal(*sha256)
@@ -31,9 +31,10 @@ func main() {
 }
 
 type reputation struct {
-	Bad, Good, Known, Unknown bool
+	Source                    string
+	Good, Bad, Known, Unknown bool
 	Confidence                float64
-	Date, Source              string
+	Date                      string
 }
 
 func virustotal(sha256 string) (reputation, error) {
@@ -75,13 +76,13 @@ func virustotal(sha256 string) (reputation, error) {
 	score = strings.Replace(strings.Trim(score, " \n"), " ", "", -1)
 	scoreSplited := strings.Split(score, "/")
 	if len(scoreSplited) != 2 {
-		return reputation{Known: true, Confidence: 0.5, Date: date, Source: "VirusTotal"}, fmt.Errorf("Error parsing score")
+		return reputation{Known: true, Confidence: 1, Date: date, Source: "VirusTotal"}, fmt.Errorf("Error parsing score")
 	}
 
 	detectedStr, totalStr := scoreSplited[0], scoreSplited[1]
 	detected, err := strconv.Atoi(detectedStr)
 	if err != nil {
-		return reputation{Known: true, Confidence: 0.5, Date: date, Source: "VirusTotal"}, fmt.Errorf("Error parsing score")
+		return reputation{Known: true, Confidence: 1, Date: date, Source: "VirusTotal"}, fmt.Errorf("Error parsing score")
 	}
 
 	if detected == 0 {
@@ -94,7 +95,7 @@ func virustotal(sha256 string) (reputation, error) {
 
 	total, err := strconv.Atoi(totalStr)
 	if err != nil {
-		return reputation{Known: true, Confidence: 0.5, Date: date, Source: "VirusTotal"}, fmt.Errorf("Error parsing score")
+		return reputation{Known: true, Confidence: 1, Date: date, Source: "VirusTotal"}, fmt.Errorf("Error parsing score")
 	}
 
 	return reputation{
