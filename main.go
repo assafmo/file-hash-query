@@ -1,40 +1,39 @@
 package main
 
-import (
-	"flag"
-	"fmt"
-	"log"
-	"regexp"
+import "net/http"
+import "log"
 
-	"encoding/json"
-)
+import "encoding/json"
 
 func main() {
-	sha256 := flag.String("sha256", "", "sha256 hash of a file")
-	flag.Parse()
+	http.Handle("/", http.FileServer(http.Dir("static")))
+	http.HandleFunc("/search", search)
+	log.Fatal(http.ListenAndServe("localhost:8080", nil))
+}
 
-	sha256Regex := regexp.MustCompile("^[a-fA-F0-9]{64}$")
-
-	if !sha256Regex.MatchString(*sha256) {
-		log.Fatalln("Cannot match sha256 with regex ^[a-fA-F0-9]{64}$")
-	}
-
-	result, err := virustotal{}.CheckSHA256(*sha256)
+func search(w http.ResponseWriter, req *http.Request) {
+	err := req.ParseForm()
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	resultJSON, _ := json.MarshalIndent(result, "", "\t")
-	fmt.Println(string(resultJSON))
-}
+	sha256 := req.URL.Query().Get("sha256")
+	rep, err := virustotal{}.CheckSHA256(sha256)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-type source interface {
-	CheckSHA256(string) (reputation, error)
-}
+	response, err := json.MarshalIndent(rep, "", "\t")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-type reputation struct {
-	Source                    string
-	Good, Bad, Known, Unknown bool
-	Confidence                float64
-	Date                      string
+	_, err = w.Write(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
