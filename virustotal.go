@@ -42,7 +42,10 @@ func (vt virustotal) CheckSHA256(sha256 string) (reputation, error) {
 	score, okScore := scoreXPath.String(xmlRoot)
 	date, okDate := dateXPath.String(xmlRoot)
 	if !okDate || !okScore {
-		return reputation{}, fmt.Errorf("Not found on VirusTotal")
+		return reputation{
+			Unknown:    true,
+			Confidence: 1,
+			Source:     "VirusTotal"}, nil
 	}
 
 	date = strings.Trim(date, " \n")[:19]
