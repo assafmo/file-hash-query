@@ -4,7 +4,7 @@ go run *.go --sha256 d069d1aa563c3d12bba74b979911050ee9af780d0e729599b4810a06768
 ```
 
 # Contribute
-Fork & Send me a Pull Request. :-)
+Fork & Send me a Pull Request.
 
 # License
 The MIT License (MIT)
