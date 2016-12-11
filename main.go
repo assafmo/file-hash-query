@@ -18,11 +18,7 @@ func main() {
 		log.Fatalln("Cannot match sha256 with regex ^[a-fA-F0-9]{64}$")
 	}
 
-	result, err := virustotal{}.CheckSHA256(*sha256)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	result, _ := virustotal{}.CheckSHA256(*sha256)
 	resultJSON, _ := json.MarshalIndent(result, "", "\t")
 	fmt.Println(string(resultJSON))
 }
