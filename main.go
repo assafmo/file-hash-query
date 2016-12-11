@@ -1,39 +1,28 @@
 package main
 
-import "net/http"
-import "log"
-
-import "encoding/json"
+import (
+	"encoding/json"
+	"flag"
+	"fmt"
+	"log"
+	"regexp"
+)
 
 func main() {
-	http.Handle("/", http.FileServer(http.Dir("static")))
-	http.HandleFunc("/search", search)
-	log.Fatal(http.ListenAndServe("localhost:8080", nil))
-}
+	sha256 := flag.String("sha256", "", "sha256 of a file")
+	flag.Parse()
 
-func search(w http.ResponseWriter, req *http.Request) {
-	err := req.ParseForm()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	sha256Regex := regexp.MustCompile("^[a-fA-F0-9]{64}$")
+
+	if !sha256Regex.MatchString(*sha256) {
+		log.Fatalln("Cannot match sha256 with regex ^[a-fA-F0-9]{64}$")
 	}
 
-	sha256 := req.URL.Query().Get("sha256")
-	rep, err := virustotal{}.CheckSHA256(sha256)
+	result, err := virustotal{}.CheckSHA256(*sha256)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		log.Fatal(err)
 	}
 
-	response, err := json.MarshalIndent(rep, "", "\t")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	_, err = w.Write(response)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	resultJSON, _ := json.MarshalIndent(result, "", "\t")
+	fmt.Println(string(resultJSON))
 }
