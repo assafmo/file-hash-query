@@ -11,6 +11,11 @@ import (
 
 type virustotal struct{}
 
+var (
+	scoreXPath = xmlpath.MustCompile(`//*[@id="basic-info"]/div/div[1]/table/tbody/tr[3]/td[2]`)
+	dateXPath  = xmlpath.MustCompile(`//*[@id="basic-info"]/div/div[1]/table/tbody/tr[4]/td[2]`)
+)
+
 func (vt virustotal) CheckSHA256(sha256 string) (reputation, error) {
 	url := fmt.Sprintf("https://www.virustotal.com/en/file/%s/analysis/", sha256)
 	request, err := http.NewRequest("GET", url, nil)
@@ -37,8 +42,6 @@ func (vt virustotal) CheckSHA256(sha256 string) (reputation, error) {
 		return reputation{}, err
 	}
 
-	scoreXPath := xmlpath.MustCompile(`//*[@id="basic-info"]/div/div[1]/table/tbody/tr[3]/td[2]`)
-	dateXPath := xmlpath.MustCompile(`//*[@id="basic-info"]/div/div[1]/table/tbody/tr[4]/td[2]`)
 	score, okScore := scoreXPath.String(xmlRoot)
 	date, okDate := dateXPath.String(xmlRoot)
 	if !okDate || !okScore {
