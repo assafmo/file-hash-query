@@ -1,4 +1,4 @@
-### Update: [This](https://gist.github.com/assafmo/7aa852d0b9ee377d42bb120212c439a2) is better. :-)
+### Update: [This](https://github.com/assafmo/virustotal.sh) is better. :-)
 
 # Usage Example
 ```bash
